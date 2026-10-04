@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 const dados = JSON.parse(fs.readFileSync(path.join(__dirname, 'produtos.json'), 'utf8'));
-const { site, empresa, segmentos, produtos, clientes, depoimentos } = dados;
+const { site, empresa, segmentos, produtos, clientes, depoimentos, elenco, simulador } = dados;
 
 const DIST = path.join(__dirname, 'dist');
 const VERSAO = Date.now().toString(36); // evita cache velho de CSS/JS depois de publicar
@@ -60,7 +60,7 @@ function tamanhoImagem(arquivo) {
 }
 
 // <img> com width/height, lazy loading e versão de 600px quando existir.
-function foto(arquivo, alt, { sizes = '(min-width: 1100px) 30vw, (min-width: 640px) 45vw, 85vw', prioridade = false, classe = '' } = {}) {
+function foto(arquivo, alt, { sizes = '(min-width: 1100px) 30vw, (min-width: 640px) 45vw, 72vw', prioridade = false, classe = '' } = {}) {
   const { w, h } = tamanhoImagem(arquivo + '.webp');
   const pequena = `${arquivo}-600.webp`;
   const srcset = fs.existsSync(path.join(__dirname, 'img', pequena))
@@ -83,7 +83,15 @@ function validarDados() {
     }
     for (const im of p.imagens) tamanhoImagem(im.arquivo + '.webp');
   }
-  for (const s of segmentos) tamanhoImagem(s.imagem + '.webp');
+  for (const s of segmentos) {
+    tamanhoImagem(s.imagem + '.webp');
+    tamanhoImagem(s.pessoa + '.webp');
+  }
+  for (const e of elenco) {
+    tamanhoImagem(e.pessoa + '.webp');
+    if (e.produto && !produtoPorSlug[e.produto]) throw new Error(`Elenco usa o produto "${e.produto}", que não existe.`);
+  }
+  for (const peca of simulador) tamanhoImagem(peca.foto + '.webp');
 }
 
 // ---------------------------------------------------------------------------
@@ -245,6 +253,11 @@ ${conteudo}
 </main>
 ${rodape()}
 <a class="whats-flutuante" href="${linkWhats(mensagemWhats)}" target="_blank" rel="noopener" aria-label="Conversar com a Marruá no WhatsApp">${icone('whatsapp-logo')}</a>
+<div class="balao" hidden data-balao>
+  <img src="/img/mascote-cabeca.webp" width="200" height="158" alt="" loading="lazy">
+  <p>Orçamento rapidinho? <a href="${linkWhats(mensagemWhats)}" target="_blank" rel="noopener">Chama no WhatsApp</a></p>
+  <button type="button" aria-label="Fechar aviso" data-balao-fechar>${icone('x')}</button>
+</div>
 <script src="/site.js?v=${VERSAO}" defer></script>
 </body>
 </html>
@@ -255,10 +268,12 @@ ${rodape()}
 // Blocos reutilizados
 
 function cardProduto(p) {
-  const im = p.imagens[0];
+  const [im, segunda] = p.imagens;
   const nomesSegmentos = p.segmentos.map((s) => segmentoPorSlug[s].nome).join(', ');
-  return `<article class="card" data-segmentos="${p.segmentos.join(' ')}">
-  <a class="card-foto" href="/produtos/${p.slug}/" tabindex="-1" aria-hidden="true">${foto(im.arquivo, im.alt)}</a>
+  // Ao passar o mouse: troca para a segunda foto, ou aproxima no detalhe da peça.
+  const fotoExtra = segunda ? foto(segunda.arquivo, '', { classe: 'card-foto-2' }) : '';
+  return `<article class="card${segunda ? ' card-duas-fotos' : ''}" data-segmentos="${p.segmentos.join(' ')}" style="--detalhe:${p.detalhe || '50% 40%'}">
+  <a class="card-foto" href="/produtos/${p.slug}/" tabindex="-1" aria-hidden="true">${foto(im.arquivo, im.alt)}${fotoExtra}</a>
   <div class="card-corpo">
     <h3 class="card-nome"><a href="/produtos/${p.slug}/">${esc(p.nome)}</a></h3>
     <p class="card-segmentos">${esc(nomesSegmentos)}</p>
@@ -284,15 +299,23 @@ function blocoNumeros() {
 }
 
 function blocoClientes() {
-  return `<ul class="clientes">
-  ${clientes
-    .map((c) => {
-      const { w, h } = tamanhoImagem(c.arquivo + '.webp');
-      const quadrado = w / h < 1.6 ? ' class="logo-quadrado"' : '';
-      return `<li><img src="/img/${c.arquivo}.webp" width="${w}" height="${h}" alt="${esc(c.nome)}"${quadrado} loading="lazy" decoding="async"></li>`;
-    })
-    .join('\n  ')}
-</ul>`;
+  const lista = (copia) =>
+    clientes
+      .map((c) => {
+        const { w, h } = tamanhoImagem(c.arquivo + '.webp');
+        const quadrado = w / h < 1.6 ? ' class="logo-quadrado"' : '';
+        return `<li><img src="/img/${c.arquivo}.webp" width="${w}" height="${h}" alt="${copia ? '' : esc(c.nome)}"${quadrado} loading="lazy" decoding="async"></li>`;
+      })
+      .join('\n    ');
+  // A segunda cópia só existe para a faixa girar sem emenda.
+  return `<div class="clientes-faixa">
+  <ul class="clientes">
+    ${lista(false)}
+  </ul>
+  <ul class="clientes clientes-copia" aria-hidden="true">
+    ${lista(true)}
+  </ul>
+</div>`;
 }
 
 function blocoCondicoes() {
@@ -338,6 +361,139 @@ function topoPagina({ itens, titulo, intro = '', extra = '' }) {
 // ---------------------------------------------------------------------------
 // Páginas
 
+// Recorte de pessoa (fundo transparente) com versão de 400 px de altura para celular.
+function fotoPessoa(arquivo, alt, sizes, atributos = 'loading="lazy"', classe = '') {
+  const { w, h } = tamanhoImagem(arquivo + '.webp');
+  const pequena = tamanhoImagem(arquivo + '-400.webp');
+  return `<img src="/img/${arquivo}.webp" srcset="/img/${arquivo}-400.webp ${pequena.w}w, /img/${arquivo}.webp ${w}w" sizes="${sizes}" width="${w}" height="${h}" alt="${esc(alt)}"${classe ? ` class="${classe}"` : ''} ${atributos} decoding="async">`;
+}
+
+// Fila de pessoas uniformizadas no hero. As do meio entram primeiro e carregam antes.
+function blocoElenco() {
+  const centro = (elenco.length - 1) / 2;
+  return `<div class="elenco">
+    <ul class="elenco-fila">
+      ${elenco
+        .map((e, i) => {
+          const p = produtoPorSlug[e.produto];
+          const nome = p ? p.nome : e.nome;
+          const href = p ? `/produtos/${p.slug}/` : '/orcamento/';
+          const distancia = Math.abs(i - centro);
+          const carga = distancia < 1 ? 'fetchpriority="high"' : distancia < 2 ? '' : 'loading="lazy"';
+          return `<li style="--atraso:${distancia.toFixed(1)}"><a class="elenco-pessoa" href="${href}">${fotoPessoa(e.pessoa, `Modelo vestindo ${nome}`, '(min-width: 960px) 22vw, 50vw', carga)}<span class="elenco-nome">${esc(nome)}</span></a></li>`;
+        })
+        .join('\n      ')}
+    </ul>
+  </div>`;
+}
+
+// Seletor de setores: abas que trocam a pessoa e os produtos no palco.
+function blocoSetores() {
+  const abas = segmentos
+    .map(
+      (s, i) =>
+        `<button type="button" role="tab" class="setor-aba" id="aba-${s.slug}" aria-controls="painel-${s.slug}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">${icone(s.icone)}<span>${esc(s.nome)}</span></button>`
+    )
+    .join('\n        ');
+  const paineis = segmentos
+    .map((s) => {
+      const lista = produtos.filter((p) => p.segmentos.includes(s.slug)).slice(0, 3);
+      return `<div class="setor-painel" role="tabpanel" id="painel-${s.slug}" aria-labelledby="aba-${s.slug}">
+        ${fotoPessoa(s.pessoa, '', '(min-width: 700px) 30vw, 45vw', 'loading="lazy"', 'setor-pessoa')}
+        <div class="setor-info">
+          <h3 class="setor-nome">${esc(s.nome)}</h3>
+          <p>${esc(s.intro)}</p>
+          <ul class="setor-produtos">
+            ${lista.map((p) => `<li><a href="/produtos/${p.slug}/">${foto(p.imagens[0].arquivo, '', { sizes: '56px' })}<span>${esc(p.nome)}</span></a></li>`).join('\n            ')}
+          </ul>
+          <a class="btn btn-ouro" href="/segmentos/${s.slug}/">Ver uniformes ${icone('arrow-right')}</a>
+        </div>
+      </div>`;
+    })
+    .join('\n      ');
+
+  return `<section class="secao setores" id="segmentos">
+  <div class="container setores-grade">
+    <div class="setores-menu">
+      <h2 class="titulo">Uniformes para cada setor</h2>
+      <p class="secao-intro">Cada operação tem sua rotina. Escolha o seu setor e veja os uniformes que fazemos para ele.</p>
+      <div class="setores-abas" role="tablist" aria-label="Setores atendidos">
+        ${abas}
+      </div>
+      <a class="link-seta setores-outro" href="/orcamento/">Outro setor? Desenvolvemos sob medida ${icone('arrow-right')}</a>
+    </div>
+    <div class="setores-palco" data-setores>
+      ${paineis}
+    </div>
+  </div>
+</section>`;
+}
+
+// Faixas refletivas acendendo quando o feixe de luz passa.
+function blocoNoite() {
+  const pessoa = tamanhoImagem('refletivo-pessoa.webp');
+  return `<section class="noite" data-noite>
+  <div class="container noite-grade">
+    <div class="noite-texto">
+      <h2 class="titulo">Visto de dia. <span>Visto à noite.</span></h2>
+      <p>Faixas refletivas devolvem a luz dos faróis. Para quem trabalha na rua, na obra e no trânsito, ser visto é proteção.</p>
+      <div class="acoes">
+        <a class="btn btn-ouro" href="/segmentos/limpeza-urbana/">Limpeza urbana</a>
+        <a class="btn btn-claro" href="/segmentos/construcao-civil/">Construção civil</a>
+      </div>
+    </div>
+    <div class="noite-palco" aria-hidden="true">
+      <img class="noite-pessoa" src="/img/refletivo-pessoa.webp" width="${pessoa.w}" height="${pessoa.h}" alt="" loading="lazy" decoding="async">
+      <img class="noite-faixas" src="/img/refletivo-faixas.webp" width="${pessoa.w}" height="${pessoa.h}" alt="" loading="lazy" decoding="async">
+      <span class="noite-feixe"></span>
+    </div>
+  </div>
+</section>`;
+}
+
+// Simulador: a pessoa envia o logo e vê aplicado na peça. Tudo acontece no navegador.
+function blocoSimulador() {
+  const primeira = simulador[0];
+  const { w, h } = tamanhoImagem(primeira.foto + '.webp');
+  const cores = [
+    ['original', 'Cores do logo'],
+    ['branco', 'Branco'],
+    ['preto', 'Preto'],
+    ['dourado', 'Dourado'],
+  ];
+  return `<section class="secao secao-branca simulador" id="simulador">
+  <div class="container simulador-grade">
+    <div class="simulador-texto">
+      <h2 class="titulo">Veja sua marca no uniforme</h2>
+      <p class="secao-intro">Envie o logo da sua empresa e veja como ele fica aplicado. O arquivo não sai do seu aparelho.</p>
+      <div class="sim-controles">
+        <label class="btn btn-ouro btn-grande sim-enviar">${icone('upload-simple')}Enviar meu logo<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="sr" data-sim-arquivo></label>
+        <p class="sim-status" aria-live="polite" data-sim-status>Exemplo com o logo da Marruá. Logos em PNG com fundo transparente ficam melhores.</p>
+        <fieldset class="sim-grupo">
+          <legend>Peça</legend>
+          <div class="chips">${simulador.map((p, i) => `<label class="chip"><input type="radio" name="sim-peca" value="${i}" class="sr"${i === 0 ? ' checked' : ''}>${esc(p.nome)}</label>`).join('')}</div>
+        </fieldset>
+        <fieldset class="sim-grupo">
+          <legend>Cor da aplicação</legend>
+          <div class="chips">${cores.map(([v, t]) => `<label class="chip"><input type="radio" name="sim-cor" value="${v}" class="sr"${v === primeira.cor ? ' checked' : ''}>${t}</label>`).join('')}</div>
+        </fieldset>
+        <label class="sim-tamanho">Tamanho do logo <input type="range" min="60" max="150" value="100" data-sim-tamanho></label>
+      </div>
+      <div class="acoes">
+        <a class="btn btn-marinho" href="${linkWhats(`Olá, Marruá! Testei meu logo no simulador do site (peça: ${primeira.nome}) e gostaria de um orçamento.`)}" target="_blank" rel="noopener" data-sim-whats>${icone('whatsapp-logo')}Pedir orçamento com esse visual</a>
+        <button type="button" class="btn btn-contorno" data-sim-baixar>${icone('download-simple')}Baixar imagem</button>
+      </div>
+    </div>
+    <div class="sim-palco">
+      <div class="sim-foto" data-sim data-pecas="${esc(JSON.stringify(simulador))}" style="--x:${primeira.x};--y:${primeira.y};--w:${primeira.largura}">
+        <img class="sim-peca" src="/img/${primeira.foto}.webp" width="${w}" height="${h}" alt="${esc(primeira.alt)}" loading="lazy" decoding="async" data-sim-peca>
+        <img class="sim-logo" src="/img/logo-claro.webp" alt="" data-sim-logo>
+      </div>
+    </div>
+  </div>
+</section>`;
+}
+
 function paginaInicial() {
   const destaques = produtos.filter((p) => p.destaque);
   const selos = [
@@ -361,22 +517,20 @@ function paginaInicial() {
 
   const conteudo = `
 <section class="hero">
-  <div class="container hero-grade">
+  <div class="container hero-topo">
     <div class="hero-texto">
       <p class="sobretitulo">Fábrica de uniformes em Curitiba desde 1990</p>
       <h1 class="hero-titulo">Uniformes <span class="destaque">que representam</span> <span class="script">sua marca.</span></h1>
+    </div>
+    <div class="hero-lado">
       <p class="hero-sub">Há mais de 30 anos vestimos equipes de indústrias, hospitais, transporte e serviços com uniformes duráveis, confortáveis e com a cara da sua empresa.</p>
       <div class="acoes">
         <a class="btn btn-ouro btn-grande" href="${linkWhats(MSG_GERAL)}" target="_blank" rel="noopener">${icone('whatsapp-logo')}Pedir orçamento</a>
         <a class="btn btn-contorno btn-grande" href="/produtos/">Ver produtos</a>
       </div>
     </div>
-    <div class="hero-fotos">
-      <div class="hero-foto hero-foto-a">${foto('jaqueta-nylon-feminina-2', 'Mulher vestindo jaqueta de nylon azul-marinho da Marruá', { prioridade: true, sizes: '(min-width: 1024px) 28vw, 55vw' })}</div>
-      <div class="hero-foto hero-foto-b">${foto('jaleco-branco', 'Mulher vestindo jaleco branco de manga longa', { prioridade: true, sizes: '(min-width: 1024px) 17vw, 38vw' })}</div>
-      <div class="hero-foto hero-foto-c">${foto('camisa-de-brim', 'Homem vestindo camisa de brim com faixas refletivas e boné', { sizes: '(min-width: 1024px) 17vw, 38vw' })}</div>
-    </div>
   </div>
+  ${blocoElenco()}
   <div class="container">
     <ul class="selos">
       ${selos.map(([ic, txt]) => `<li>${icone(ic)}<span>${esc(txt)}</span></li>`).join('\n      ')}
@@ -384,40 +538,18 @@ function paginaInicial() {
   </div>
 </section>
 
-<section class="secao secao-branca">
+<section class="secao secao-branca secao-numeros">
+  <p class="desde" aria-hidden="true"><span>Desde 1990</span></p>
   <div class="container">
     ${blocoNumeros()}
     <h2 class="titulo-clientes">Empresas que já confiam na Marruá</h2>
-    ${blocoClientes()}
   </div>
+  ${blocoClientes()}
 </section>
 
-<section class="secao secao-marinho" id="segmentos">
-  <div class="container">
-    <h2 class="titulo">Uniformes para cada setor</h2>
-    <p class="secao-intro">Cada operação tem sua rotina. Escolha o seu setor e veja os uniformes que fazemos para ele.</p>
-    <ul class="segmentos-grade">
-      ${segmentos
-        .map(
-          (s) => `<li><a class="segmento" href="/segmentos/${s.slug}/">
-        ${icone(s.icone, 'segmento-icone')}
-        <span class="segmento-nome">${esc(s.nome)}</span>
-        <span class="segmento-resumo">${esc(s.resumo)}</span>
-        ${icone('arrow-right', 'segmento-seta')}
-      </a></li>`
-        )
-        .join('\n      ')}
-      <li><a class="segmento segmento-outro" href="/orcamento/">
-        ${icone('ruler', 'segmento-icone')}
-        <span class="segmento-nome">Outro setor?</span>
-        <span class="segmento-resumo">Desenvolvemos o uniforme sob medida para a sua operação.</span>
-        ${icone('arrow-right', 'segmento-seta')}
-      </a></li>
-    </ul>
-  </div>
-</section>
+${blocoSetores()}
 
-<section class="secao">
+<section class="secao secao-branca">
   <div class="container">
     <div class="secao-cabeca">
       <h2 class="titulo">Produtos em destaque</h2>
@@ -429,7 +561,11 @@ function paginaInicial() {
   </div>
 </section>
 
-<section class="secao secao-branca">
+${blocoNoite()}
+
+${blocoSimulador()}
+
+<section class="secao">
   <div class="container motivos">
     <div class="motivos-foto">${foto('polo-bordada-costas', 'Costas de camisa polo azul-marinho com a bandeira do Brasil bordada', { sizes: '(min-width: 1024px) 40vw, 90vw' })}</div>
     <div class="motivos-texto">
@@ -441,7 +577,7 @@ function paginaInicial() {
   </div>
 </section>
 
-<section class="secao">
+<section class="secao secao-branca">
   <div class="container">
     <h2 class="titulo">Como funciona</h2>
     <ol class="passos">
@@ -450,7 +586,7 @@ function paginaInicial() {
   </div>
 </section>
 
-<section class="secao secao-branca">
+<section class="secao">
   <div class="container">
     <div class="secao-cabeca">
       <h2 class="titulo">O que dizem nossos clientes</h2>
@@ -510,6 +646,7 @@ function paginaProdutos() {
         <p>Desenvolvemos o uniforme sob medida para a sua operação.</p>
       </div>
       <a class="btn btn-ouro btn-grande" href="/orcamento/">Pedir orçamento</a>
+      <img class="faixa-mascote" src="/img/mascote.webp" width="508" height="845" alt="" loading="lazy" decoding="async">
     </div>
   </div>
 </section>`;
@@ -864,7 +1001,7 @@ function paginaContato() {
 function paginaObrigado() {
   const conteudo = `<section class="secao obrigado">
   <div class="container obrigado-grade">
-    <img class="obrigado-mascote" src="/img/mascote.webp" width="508" height="845" alt="Mascote da Marruá fazendo sinal de positivo" fetchpriority="high">
+    <img class="obrigado-mascote mascote-pulo" src="/img/mascote.webp" width="508" height="845" alt="Mascote da Marruá fazendo sinal de positivo" fetchpriority="high">
     <div>
       <h1 class="titulo-pagina">Recebemos seu pedido de orçamento!</h1>
       <p class="pagina-intro">Em breve entraremos em contato.</p>
@@ -899,6 +1036,7 @@ function paginaPrivacidade() {
 
     <h2>Quais dados coletamos</h2>
     <p>Só coletamos os dados que você mesmo informa no formulário de orçamento: nome, telefone ou WhatsApp, empresa, e-mail, segmento, produto de interesse, quantidade de peças e mensagem.</p>
+    <p>O logo enviado no simulador "Veja sua marca no uniforme" é processado apenas no seu navegador. Ele não é enviado ao nosso servidor nem guardado.</p>
     <p>Este site não usa cookies de rastreamento, ferramentas de publicidade nem análise de audiência. As fontes e imagens são servidas pelo nosso próprio servidor.</p>
 
     <h2>Como os dados são usados</h2>
@@ -932,7 +1070,10 @@ function paginaPrivacidade() {
 function pagina404() {
   const conteudo = `<section class="secao obrigado">
   <div class="container obrigado-grade">
-    <img class="obrigado-mascote" src="/img/mascote.webp" width="508" height="845" alt="Mascote da Marruá">
+    <div class="mascote-perdido">
+      <p class="fala" aria-hidden="true">Ué, cadê?</p>
+      <img class="obrigado-mascote" src="/img/mascote.webp" width="508" height="845" alt="Mascote da Marruá com cara de dúvida">
+    </div>
     <div>
       <h1 class="titulo-pagina">Página não encontrada</h1>
       <p class="pagina-intro">O endereço pode ter mudado com o novo site. Veja nossos produtos ou fale com a gente.</p>

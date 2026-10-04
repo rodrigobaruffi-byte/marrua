@@ -126,7 +126,7 @@ if (!reduzirMovimento && 'IntersectionObserver' in window) {
 
 // Entrada suave das seções ---------------------------------------------------
 if (!reduzirMovimento && 'IntersectionObserver' in window) {
-  const alvos = document.querySelectorAll('.secao .titulo, .card, .segmento, .passos li, .motivos-lista li, .depoimento, .mvv-item, .linha-tempo li');
+  const alvos = document.querySelectorAll('.secao .titulo, .card, .passos li, .motivos-lista li, .depoimento, .mvv-item, .linha-tempo li, .cta-mascote');
   const obs = new IntersectionObserver(
     (entradas) => {
       for (const e of entradas) {
@@ -144,6 +144,251 @@ if (!reduzirMovimento && 'IntersectionObserver' in window) {
       obs.observe(el);
     }
   });
+}
+
+// Setores: abas que trocam a pessoa e os produtos do palco --------------------
+const palco = document.querySelector('[data-setores]');
+if (palco) {
+  const abas = [...document.querySelectorAll('.setor-aba')];
+  const paineis = [...palco.querySelectorAll('.setor-painel')];
+  const selecionar = (aba, foco = false) => {
+    for (const a of abas) {
+      const ativa = a === aba;
+      a.setAttribute('aria-selected', String(ativa));
+      a.tabIndex = ativa ? 0 : -1;
+    }
+    for (const p of paineis) p.classList.toggle('ativo', p.id === aba.getAttribute('aria-controls'));
+    if (foco) aba.focus();
+  };
+  selecionar(abas[0]);
+
+  abas.forEach((aba, i) => {
+    aba.addEventListener('click', () => selecionar(aba));
+    if (window.matchMedia('(hover: hover)').matches) aba.addEventListener('mouseenter', () => selecionar(aba));
+    aba.addEventListener('keydown', (e) => {
+      const passo = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[e.key];
+      if (passo) {
+        e.preventDefault();
+        selecionar(abas[(i + passo + abas.length) % abas.length], true);
+      } else if (e.key === 'Home' || e.key === 'End') {
+        e.preventDefault();
+        selecionar(e.key === 'Home' ? abas[0] : abas[abas.length - 1], true);
+      }
+    });
+  });
+
+  // Quando o palco se aproxima da tela, carrega as fotos de todas as abas para a troca ser instantânea.
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        palco.querySelectorAll('img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
+        obs.disconnect();
+      },
+      { rootMargin: '300px' }
+    );
+    obs.observe(palco);
+  }
+}
+
+// Noite: o feixe de luz só roda enquanto a seção está na tela ----------------
+const noite = document.querySelector('[data-noite]');
+if (noite && 'IntersectionObserver' in window) {
+  new IntersectionObserver(([e]) => noite.classList.toggle('ativo', e.isIntersecting), { threshold: 0.25 }).observe(noite);
+}
+
+// Simulador: aplica o logo enviado na peça, tudo no navegador ---------------
+const sim = document.querySelector('[data-sim]');
+if (sim) {
+  const pecas = JSON.parse(sim.dataset.pecas);
+  const fotoPeca = sim.querySelector('[data-sim-peca]');
+  const imgLogo = sim.querySelector('[data-sim-logo]');
+  const status = document.querySelector('[data-sim-status]');
+  const linkWhatsSim = document.querySelector('[data-sim-whats]');
+  const CORES = { branco: [255, 255, 255], preto: [20, 22, 28], dourado: [226, 176, 74] };
+  let original = null; // logo atual, já sem fundo branco
+  let peca = pecas[0];
+  let corManual = false;
+
+  const carregar = (src) =>
+    new Promise((ok, falha) => {
+      const im = new Image();
+      im.onload = () => ok(im);
+      im.onerror = falha;
+      im.src = src;
+    });
+
+  // Logos em JPG costumam ter fundo branco: se os quatro cantos forem brancos, tiramos esse fundo.
+  const tirarFundoBranco = (im) => {
+    const largura = im.naturalWidth || 600;
+    const altura = im.naturalHeight || 300;
+    const escala = Math.min(1, 900 / Math.max(largura, altura));
+    const c = document.createElement('canvas');
+    c.width = Math.round(largura * escala);
+    c.height = Math.round(altura * escala);
+    const ctx = c.getContext('2d');
+    ctx.drawImage(im, 0, 0, c.width, c.height);
+    const dados = ctx.getImageData(0, 0, c.width, c.height);
+    const px = dados.data;
+    const branco = (x, y) => {
+      const i = (y * c.width + x) * 4;
+      return px[i + 3] > 250 && px[i] > 235 && px[i + 1] > 235 && px[i + 2] > 235;
+    };
+    if (branco(0, 0) && branco(c.width - 1, 0) && branco(0, c.height - 1) && branco(c.width - 1, c.height - 1)) {
+      for (let i = 0; i < px.length; i += 4) {
+        const claro = Math.min(px[i], px[i + 1], px[i + 2]);
+        if (claro > 245) px[i + 3] = 0;
+        else if (claro > 215) px[i + 3] = Math.round(px[i + 3] * ((245 - claro) / 30));
+      }
+      ctx.putImageData(dados, 0, 0);
+    }
+    return c;
+  };
+
+  const corEscolhida = () => document.querySelector('input[name="sim-cor"]:checked').value;
+
+  // Logo na cor escolhida (bordado de uma cor) ou nas cores originais.
+  const logoNaCor = () => {
+    if (!original) return null;
+    const cor = CORES[corEscolhida()];
+    if (!cor) return original;
+    const c = document.createElement('canvas');
+    c.width = original.width;
+    c.height = original.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(original, 0, 0);
+    const dados = ctx.getImageData(0, 0, c.width, c.height);
+    for (let i = 0; i < dados.data.length; i += 4) {
+      dados.data[i] = cor[0];
+      dados.data[i + 1] = cor[1];
+      dados.data[i + 2] = cor[2];
+    }
+    ctx.putImageData(dados, 0, 0);
+    return c;
+  };
+
+  const desenhar = () => {
+    const c = logoNaCor();
+    if (c) imgLogo.src = c.toDataURL('image/png');
+  };
+
+  const mensagem = () => `Olá, Marruá! Testei meu logo no simulador do site (peça: ${peca.nome}) e gostaria de um orçamento.`;
+
+  const trocarPeca = (indice) => {
+    peca = pecas[indice];
+    fotoPeca.src = `/img/${peca.foto}.webp`;
+    fotoPeca.alt = peca.alt;
+    sim.style.setProperty('--x', peca.x);
+    sim.style.setProperty('--y', peca.y);
+    sim.style.setProperty('--w', peca.largura);
+    if (!corManual) document.querySelector(`input[name="sim-cor"][value="${peca.cor}"]`).checked = true;
+    linkWhatsSim.href = linkWhatsSim.href.split('?')[0] + '?text=' + encodeURIComponent(mensagem());
+    desenhar();
+  };
+
+  // O logo de exemplo só é processado quando o simulador chega perto da tela.
+  const iniciar = () =>
+    carregar('/img/logo.webp').then((im) => {
+      if (!original) {
+        original = tirarFundoBranco(im);
+        desenhar();
+      }
+    });
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        obs.disconnect();
+        iniciar();
+      },
+      { rootMargin: '400px' }
+    );
+    obs.observe(sim);
+  } else {
+    iniciar();
+  }
+
+  document.querySelector('[data-sim-arquivo]').addEventListener('change', async (e) => {
+    const arquivo = e.target.files[0];
+    if (!arquivo) return;
+    status.classList.remove('erro');
+    if (!arquivo.type.startsWith('image/')) {
+      status.textContent = 'Esse arquivo não é uma imagem. Envie PNG, JPG, WEBP ou SVG.';
+      status.classList.add('erro');
+      return;
+    }
+    const url = URL.createObjectURL(arquivo);
+    try {
+      original = tirarFundoBranco(await carregar(url));
+      document.querySelector('input[name="sim-cor"][value="original"]').checked = true;
+      corManual = true;
+      desenhar();
+      status.textContent = 'Pronto! Seu logo foi aplicado. Experimente outras peças e cores.';
+    } catch (_) {
+      status.textContent = 'Não consegui abrir essa imagem. Tente um PNG ou JPG.';
+      status.classList.add('erro');
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  });
+
+  document.querySelectorAll('input[name="sim-peca"]').forEach((r) => r.addEventListener('change', () => trocarPeca(Number(r.value))));
+  document.querySelectorAll('input[name="sim-cor"]').forEach((r) =>
+    r.addEventListener('change', () => {
+      corManual = true;
+      desenhar();
+    })
+  );
+  document.querySelector('[data-sim-tamanho]').addEventListener('input', (e) => sim.style.setProperty('--tamanho', e.target.value / 100));
+
+  // Baixar: monta a foto inteira da peça com o logo, no tamanho original.
+  document.querySelector('[data-sim-baixar]').addEventListener('click', async () => {
+    const base = await carregar(fotoPeca.src);
+    const logo = logoNaCor();
+    const c = document.createElement('canvas');
+    c.width = base.naturalWidth;
+    c.height = base.naturalHeight;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(base, 0, 0);
+    if (logo) {
+      const tamanho = Number(sim.style.getPropertyValue('--tamanho') || 1);
+      const lw = c.width * peca.largura * tamanho;
+      const lh = (lw * logo.height) / logo.width;
+      ctx.drawImage(logo, c.width * peca.x - lw / 2, c.height * peca.y - lh / 2, lw, lh);
+    }
+    const a = document.createElement('a');
+    a.download = `marrua-${peca.foto}-com-seu-logo.png`;
+    a.href = c.toDataURL('image/png');
+    a.click();
+  });
+}
+
+// Balão do mascote: aparece uma vez por visita, depois de um tempo na página --
+const balao = document.querySelector('[data-balao]');
+if (balao && !/^\/(orcamento|obrigado)\//.test(location.pathname)) {
+  let visto = false;
+  try {
+    visto = sessionStorage.getItem('marrua-balao') === '1';
+  } catch (_) {
+    // sem sessionStorage o balão pode aparecer de novo; não é grave
+  }
+  const guardar = () => {
+    try {
+      sessionStorage.setItem('marrua-balao', '1');
+    } catch (_) {}
+  };
+  if (!visto) {
+    const mostrar = setTimeout(() => {
+      balao.hidden = false;
+      guardar();
+      setTimeout(() => (balao.hidden = true), 12000);
+    }, 15000);
+    balao.querySelector('[data-balao-fechar]').addEventListener('click', () => {
+      balao.hidden = true;
+      clearTimeout(mostrar);
+      guardar();
+    });
+  }
 }
 
 // Mapa carregado só quando a pessoa pede -------------------------------------
