@@ -1,0 +1,318 @@
+{
+  "site": {
+    "url": "https://marruauniformes.com.br",
+    "nome": "Marruá Uniformes Profissionais",
+    "formEndpoint": ""
+  },
+
+  "empresa": {
+    "telefone": "(41) 3246-0362",
+    "telefoneLink": "+554132460362",
+    "whatsapp": "(41) 98409-6470",
+    "whatsappNumero": "5541984096470",
+    "email": "marruarp@terra.com.br",
+    "instagram": "https://www.instagram.com/marruauniformes/",
+    "facebook": "https://www.facebook.com/marruauniformes",
+    "googleAvaliacoes": "https://www.google.com/maps/search/?api=1&query=Marru%C3%A1+Uniformes+Profissionais+Curitiba",
+    "endereco": {
+      "rua": "R. Maestro Francisco Antonello, 1914",
+      "bairro": "Fanny",
+      "cidade": "Curitiba",
+      "uf": "PR",
+      "cep": "81030-100"
+    },
+    "horario": "",
+    "fundacao": "1990-05-18",
+    "fundadores": ["Irio Ferreira", "Deolinda Ferreira"],
+    "gestao": ["Andreia Ferreira de Souza", "Fabio Cit Conforto de Souza"],
+    "pedidoMinimo": 20,
+    "prazo": "até 30 dias",
+    "numeros": [
+      { "valor": 30, "sufixo": "+", "rotulo": "anos fabricando uniformes" },
+      { "valor": 400, "sufixo": "+", "rotulo": "empresas atendidas" },
+      { "valor": 8000, "sufixo": "", "rotulo": "peças produzidas por mês" }
+    ]
+  },
+
+  "segmentos": [
+    {
+      "slug": "hospitalar",
+      "nome": "Saúde e Hospitalar",
+      "titulo": "Uniformes hospitalares em Curitiba",
+      "resumo": "Jalecos e aventais para clínicas, hospitais e laboratórios.",
+      "intro": "Jalecos e aventais confortáveis para longas jornadas, com boa apresentação e fácil manutenção para clínicas, hospitais e laboratórios.",
+      "icone": "first-aid-kit",
+      "imagem": "jaleco-branco",
+      "urlsAntigas": ["/category/hospitalar/"]
+    },
+    {
+      "slug": "alimenticio",
+      "nome": "Indústria Alimentícia",
+      "titulo": "Uniformes para indústria alimentícia em Curitiba",
+      "resumo": "Higiene e padronização para cozinhas e fábricas.",
+      "intro": "Aventais e jalecos práticos, pensados para higiene, padronização e lavagens frequentes.",
+      "icone": "chef-hat",
+      "imagem": "avental-oxford",
+      "urlsAntigas": ["/category/alimenticio/"]
+    },
+    {
+      "slug": "industrial",
+      "nome": "Indústria e Metalurgia",
+      "titulo": "Uniformes industriais em Curitiba",
+      "resumo": "Brim, macacões e jaquetas para a rotina pesada.",
+      "intro": "Brim de alta resistência, macacões e jaquetas para a rotina pesada da indústria e da metalurgia.",
+      "icone": "factory",
+      "imagem": "macacao-de-brim",
+      "urlsAntigas": ["/category/industrial/"]
+    },
+    {
+      "slug": "construcao-civil",
+      "nome": "Construção Civil",
+      "titulo": "Uniformes para construção civil em Curitiba",
+      "resumo": "Durabilidade e alta visibilidade no canteiro.",
+      "intro": "Uniformes duráveis e de alta visibilidade para o canteiro de obras.",
+      "icone": "hard-hat",
+      "imagem": "colete-refletivo",
+      "urlsAntigas": ["/category/construcao-civil/"]
+    },
+    {
+      "slug": "transporte",
+      "nome": "Transporte Coletivo e Logística",
+      "titulo": "Uniformes para transporte coletivo e logística em Curitiba",
+      "resumo": "Padronização e proteção contra o frio para frotas.",
+      "intro": "Padronização, conforto e proteção contra o frio para motoristas, cobradores e equipes de logística.",
+      "icone": "bus",
+      "imagem": "jaqueta-tecido-masculina",
+      "urlsAntigas": ["/category/transporte/"]
+    },
+    {
+      "slug": "seguranca",
+      "nome": "Segurança",
+      "titulo": "Uniformes para segurança em Curitiba",
+      "resumo": "Presença e profissionalismo em todos os turnos.",
+      "intro": "Jaquetas, pulôveres e coletes que transmitem presença e profissionalismo.",
+      "icone": "shield-check",
+      "imagem": "jaqueta-puffer",
+      "urlsAntigas": ["/category/seguranca/"]
+    },
+    {
+      "slug": "limpeza-urbana",
+      "nome": "Limpeza Urbana",
+      "titulo": "Uniformes para limpeza urbana em Curitiba",
+      "resumo": "Alta visibilidade para quem trabalha na rua.",
+      "intro": "Conjuntos de alta visibilidade e resistência para quem trabalha na rua.",
+      "icone": "broom",
+      "imagem": "conjunto-laranja",
+      "urlsAntigas": []
+    }
+  ],
+
+  "produtos": [
+    {
+      "slug": "camisa-de-brim",
+      "nome": "Camisa de Brim Personalizada",
+      "segmentos": ["industrial", "construcao-civil", "transporte"],
+      "descricao": "Camisa de brim de alta resistência para o trabalho operacional, personalizada com a identidade da sua empresa.",
+      "material": ["Brim de alta resistência"],
+      "caracteristicas": ["Modelagem confortável", "Alta durabilidade", "Feita para uso operacional", "Opção de personalização"],
+      "imagens": [
+        { "arquivo": "camisa-de-brim", "alt": "Homem vestindo camisa de brim azul-marinho com faixas refletivas e boné" }
+      ],
+      "urlsAntigas": ["/2026/04/15/camisa-de-brim-personalizada/"]
+    },
+    {
+      "slug": "calca-de-brim",
+      "nome": "Calça de Brim Profissional",
+      "segmentos": ["industrial", "construcao-civil"],
+      "descricao": "Calça de brim de alta resistência para quem passa o dia em movimento, com modelagem confortável e acabamento durável.",
+      "material": ["Brim de alta resistência"],
+      "caracteristicas": ["Modelagem confortável", "Alta durabilidade", "Feita para uso operacional", "Opção de personalização"],
+      "imagens": [
+        { "arquivo": "calca-de-brim", "alt": "Detalhe da calça de brim azul-marinho com bolso traseiro" }
+      ],
+      "urlsAntigas": ["/2026/04/15/calca-de-brim-profissional/", "/2026/05/04/calca-de-brim-profissional-2/"]
+    },
+    {
+      "slug": "calca-de-brim-com-elastico",
+      "nome": "Calça de Brim com Elástico",
+      "segmentos": ["construcao-civil", "industrial", "transporte"],
+      "descricao": "Calça de brim com cós de elástico, prática para vestir e confortável em jornadas longas.",
+      "material": [],
+      "caracteristicas": [],
+      "imagens": [
+        { "arquivo": "calca-de-brim-com-elastico", "alt": "Detalhe da calça de brim cinza com cós de elástico e bolsos traseiros" }
+      ],
+      "urlsAntigas": ["/2026/07/22/calca-brim-com-elastico/"]
+    },
+    {
+      "slug": "macacao-de-brim",
+      "nome": "Macacão de Brim",
+      "segmentos": ["construcao-civil", "industrial"],
+      "descricao": "Macacão de brim em peça única para a rotina pesada da indústria e do canteiro de obras.",
+      "material": [],
+      "caracteristicas": [],
+      "destaque": true,
+      "imagens": [
+        { "arquivo": "macacao-de-brim", "alt": "Homem vestindo macacão de brim verde de manga curta" }
+      ],
+      "urlsAntigas": ["/2026/07/22/macacao-brim/"]
+    },
+    {
+      "slug": "conjunto-laranja",
+      "nome": "Conjunto Laranja",
+      "segmentos": ["construcao-civil", "limpeza-urbana"],
+      "descricao": "Conjunto laranja de alta visibilidade com faixas refletivas, para quem trabalha na rua e no canteiro.",
+      "material": [],
+      "caracteristicas": [],
+      "destaque": true,
+      "imagens": [
+        { "arquivo": "conjunto-laranja", "alt": "Homem vestindo conjunto laranja com faixas refletivas e boné com protetor de nuca" }
+      ],
+      "urlsAntigas": ["/2026/08/21/conjunto-laranja/"]
+    },
+    {
+      "slug": "jaleco-oxford",
+      "nome": "Jaleco Oxford",
+      "segmentos": ["hospitalar"],
+      "descricao": "Jaleco em tecido oxford com acabamento em viés, leve e fácil de manter no dia a dia de clínicas e laboratórios.",
+      "material": ["Tecido oxford"],
+      "caracteristicas": [],
+      "destaque": true,
+      "imagens": [
+        { "arquivo": "jaleco-oxford", "alt": "Mulher vestindo jaleco oxford verde-claro sem mangas com viés verde" }
+      ],
+      "urlsAntigas": ["/2026/08/20/jaleco-oxford/"]
+    },
+    {
+      "slug": "jaleco-branco",
+      "nome": "Jaleco Branco",
+      "segmentos": ["hospitalar"],
+      "descricao": "Jaleco branco de manga longa em oxford, com modelagem confortável para longas jornadas na área da saúde.",
+      "material": ["Tecido oxford"],
+      "caracteristicas": ["Manga longa", "Modelagem confortável", "Alta durabilidade", "Opção de personalização"],
+      "imagens": [
+        { "arquivo": "jaleco-branco", "alt": "Mulher vestindo jaleco branco de manga longa" }
+      ],
+      "urlsAntigas": ["/2026/06/23/jaleco-branco/"]
+    },
+    {
+      "slug": "jaleco-copeira",
+      "nome": "Jaleco Copeira",
+      "segmentos": ["alimenticio", "hospitalar"],
+      "descricao": "Jaleco de copeira com acabamento rendado na gola e nas mangas, para copa, cozinha e serviços gerais.",
+      "material": [],
+      "caracteristicas": [],
+      "imagens": [
+        { "arquivo": "jaleco-copeira", "alt": "Mulher vestindo jaleco de copeira azul-marinho com acabamento rendado branco" }
+      ],
+      "urlsAntigas": ["/2026/08/21/jaleco-copeira/"]
+    },
+    {
+      "slug": "avental-oxford",
+      "nome": "Avental Oxford",
+      "segmentos": ["alimenticio"],
+      "descricao": "Avental em tecido oxford que pode receber o bordado da sua marca, para cozinhas, restaurantes e balcões.",
+      "material": ["Tecido oxford"],
+      "caracteristicas": [],
+      "destaque": true,
+      "imagens": [
+        { "arquivo": "avental-oxford", "alt": "Homem vestindo avental oxford bordô com logo bordado no peito" }
+      ],
+      "urlsAntigas": ["/2026/07/22/avental-oxford/"]
+    },
+    {
+      "slug": "jaqueta-nylon-masculina",
+      "nome": "Jaqueta de Nylon Masculina",
+      "segmentos": ["seguranca", "transporte", "industrial"],
+      "descricao": "Jaqueta de nylon acolchoada com gola alta e zíper, para enfrentar o frio de Curitiba no trabalho.",
+      "material": [],
+      "caracteristicas": [],
+      "imagens": [
+        { "arquivo": "jaqueta-nylon-masculina", "alt": "Homem vestindo jaqueta de nylon preta acolchoada" }
+      ],
+      "urlsAntigas": ["/2026/07/22/jaqueta-nylon-masculina/"]
+    },
+    {
+      "slug": "jaqueta-nylon-feminina",
+      "nome": "Jaqueta de Nylon Feminina",
+      "segmentos": ["seguranca"],
+      "descricao": "Jaqueta de nylon impermeável com modelagem feminina, para equipes que trabalham na rua ou no atendimento externo.",
+      "material": ["Nylon impermeável"],
+      "caracteristicas": [],
+      "destaque": true,
+      "imagens": [
+        { "arquivo": "jaqueta-nylon-feminina", "alt": "Mulher vestindo jaqueta de nylon azul-marinho fechada" },
+        { "arquivo": "jaqueta-nylon-feminina-2", "alt": "Mulher vestindo jaqueta de nylon azul-marinho aberta sobre camisa" }
+      ],
+      "urlsAntigas": ["/2026/08/20/jaqueta-feminina-3/"]
+    },
+    {
+      "slug": "jaqueta-puffer",
+      "nome": "Jaqueta Nylon Puffer",
+      "segmentos": ["seguranca", "transporte"],
+      "descricao": "Jaqueta puffer em nylon com acabamento brilhante, leve e quente para os turnos frios.",
+      "material": [],
+      "caracteristicas": [],
+      "imagens": [
+        { "arquivo": "jaqueta-puffer", "alt": "Homem vestindo jaqueta puffer preta com acabamento brilhante" }
+      ],
+      "urlsAntigas": ["/2026/07/22/jaqueta-nylon-puffer/"]
+    },
+    {
+      "slug": "jaqueta-tecido-masculina",
+      "nome": "Jaqueta em Tecido Masculina",
+      "segmentos": ["seguranca", "transporte"],
+      "descricao": "Jaqueta bicolor em tecido, com recortes em azul-marinho e cinza e friso branco, para equipes que precisam de boa apresentação no frio.",
+      "material": [],
+      "caracteristicas": [],
+      "imagens": [
+        { "arquivo": "jaqueta-tecido-masculina", "alt": "Homem de perfil vestindo jaqueta bicolor azul-marinho e cinza com friso branco" }
+      ],
+      "urlsAntigas": ["/2026/07/22/jaqueta-em-tecido-masculina/"]
+    },
+    {
+      "slug": "pulover-de-la-decote-v",
+      "nome": "Pulôver de Lã Decote V",
+      "segmentos": ["seguranca", "transporte"],
+      "descricao": "Pulôver de lã com decote V, para usar sobre a camisa nos dias frios sem perder a apresentação.",
+      "material": ["Lã"],
+      "caracteristicas": [],
+      "destaque": true,
+      "imagens": [
+        { "arquivo": "pulover-de-la-decote-v", "alt": "Homem vestindo pulôver de lã verde-oliva com decote V sobre camisa" }
+      ],
+      "urlsAntigas": ["/2026/08/21/pulover-de-la-decote-v/"]
+    },
+    {
+      "slug": "colete-feminino",
+      "nome": "Colete Feminino",
+      "segmentos": ["seguranca", "transporte"],
+      "descricao": "Colete feminino com botões, para recepção, atendimento e equipes que lidam com o público.",
+      "material": [],
+      "caracteristicas": [],
+      "imagens": [
+        { "arquivo": "colete-feminino", "alt": "Mulher vestindo colete feminino preto com botões sobre blusa branca" }
+      ],
+      "urlsAntigas": ["/2026/08/21/colete-feminino/"]
+    }
+  ],
+
+  "clientes": [
+    { "nome": "Trützschler", "arquivo": "cliente-trutzschler" },
+    { "nome": "Cibra", "arquivo": "cliente-cibra" },
+    { "nome": "Viação Castelo Branco", "arquivo": "cliente-viacao-castelo-branco" },
+    { "nome": "Grupo Leblon Transporte", "arquivo": "cliente-grupo-leblon" },
+    { "nome": "Estre", "arquivo": "cliente-estre" },
+    { "nome": "Santa Mônica Clube de Campo", "arquivo": "cliente-santa-monica" },
+    { "nome": "Expresso Azul", "arquivo": "cliente-expresso-azul" },
+    { "nome": "Viação Rocio", "arquivo": "cliente-viacao-rocio" },
+    { "nome": "Viação Piraquara", "arquivo": "cliente-viacao-piraquara" },
+    { "nome": "Auxiliar", "arquivo": "cliente-auxiliar" },
+    { "nome": "Grupo Sorriso", "arquivo": "cliente-grupo-sorriso" }
+  ],
+
+  "depoimentos": [
+    { "nome": "Rodrigo Lima", "texto": "Ótima loja de uniformes personalizados.", "nota": 5 },
+    { "nome": "Tiago Pontes de Liz", "texto": "Atendimento e agilidade top!", "nota": 5 }
+  ]
+}
